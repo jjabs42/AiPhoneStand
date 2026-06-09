@@ -12,7 +12,7 @@ def run_face_tracking(capture_num):
     model = YOLO(path)
 
     #instantiate capture obj with a parameter of camera "number"
-    cap = cv2.VideoCapture(1)
+    cap = cv2.VideoCapture(capture_num)
 
 
 
