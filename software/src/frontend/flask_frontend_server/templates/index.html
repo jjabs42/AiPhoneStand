@@ -1,0 +1,30 @@
+<!--USED A LLM TO GENERATE THIS-->
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="{{url_for('static', filename='styles.css')}}" rel="stylesheet">
+    <title>Webcam Stream & Capture</title>
+    
+</head>
+<body>
+
+    <video id="webcamVideo" autoplay playsinline muted></video>
+    
+    <div class="controls">
+        <button id="flipBtn" class="btn">Flip Camera</button>
+        <button id="captureBtn" class="btn" style="background-color: #ff3b30; color: white;">Take Picture</button>
+    </div>
+
+    <div id="previewContainer">
+        <img id="photoPreview" alt="Captured photo preview">
+    </div>
+
+    <canvas id="captureCanvas" style="display: none;"></canvas>
+
+`   <script src="{{url_for('static', filename='code.js')}}"></script>
+</body>
+</html>

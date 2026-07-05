@@ -1,0 +1,69 @@
+
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #000;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: Arial, sans-serif;
+}
+
+#webcamVideo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; 
+}
+
+/* Container for the control buttons */
+.controls {
+    position: absolute;
+    bottom: 30px;
+    display: flex;
+    gap: 20px;
+    z-index: 10;
+}
+
+.btn {
+    padding: 12px 24px;
+    font-size: 16px;
+    font-weight: bold;
+    background-color: rgba(255, 255, 255, 0.85);
+    color: #000000;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    transition: background-color 0.2s;
+}
+
+.btn:active {
+    background-color: rgb(97, 97, 97);
+}
+
+.btn:hover {
+    background-color: rgb(120, 120, 120);
+}
+
+/* Photo preview styling */
+#previewContainer {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 150px;
+    border: 3px solid white;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    display: none;
+    z-index: 10;
+    background: #000;
+}
+
+#photoPreview {
+    width: 100%;
+    display: block;
+    border-radius: 5px;
+}
