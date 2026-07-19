@@ -12,11 +12,24 @@
 </head>
 <body>
 
+    <!-- Countdown overlay display element -->
+    <div id="countdownDisplay"></div>
+
     <video id="webcamVideo" autoplay playsinline muted></video>
     
     <div class="controls">
+        <!-- Timer Select Dropdown -->
+        <select id="timerSelect" class="btn">
+            <option value="0">No Delay</option>
+            <option value="3">3s Delay</option>
+            <option value="5">5s Delay</option>
+            <option value="10">10s Delay</option>
+        </select>
+
         <button id="flipBtn" class="btn">Flip Camera</button>
         <button id="captureBtn" class="btn" style="background-color: #ff3b30; color: white;">Take Picture</button>
+        <!-- NEW: Start Tracking Button -->
+        <button id="trackBtn" class="btn" style="background-color: #007aff; color: white;">Start Tracking</button>
     </div>
 
     <div id="previewContainer">
@@ -25,6 +38,6 @@
 
     <canvas id="captureCanvas" style="display: none;"></canvas>
 
-`   <script src="{{url_for('static', filename='code.js')}}"></script>
+    <script src="{{url_for('static', filename='code.js')}}"></script>
 </body>
 </html>

@@ -1,26 +1,30 @@
-
 // --- WEBSOCKET & TIMING PARAMETERS, Created with llms ---
-const WEBSOCKET_URL = "ws://localhost:5555/stream"; 
-const SEND_INTERVAL_MS = 2000; // Change this number! (2000ms = every 2 seconds)
+const WEBSOCKET_URL = "wss://192.168.68.97:5555/stream"; 
+const SEND_INTERVAL_MS = 150; // Change this number! (2000ms = every 2 seconds)
 
 const webcamVideo = document.getElementById("webcamVideo");
 const flipBtn = document.getElementById("flipBtn");
 const captureBtn = document.getElementById("captureBtn");
+const trackBtn = document.getElementById("trackBtn"); 
 const captureCanvas = document.getElementById("captureCanvas");
 const previewContainer = document.getElementById("previewContainer");
 const photoPreview = document.getElementById("photoPreview");
 
+// UI ELEMENTS FOR TIMER
+const timerSelect = document.getElementById("timerSelect"); 
+const countdownDisplay = document.getElementById("countdownDisplay"); 
+
 let currentStream = null;
 let currentFacingMode = "user"; 
+let streamIntervalId = null; 
+let isTrackingActive = false; 
 
 // --- SETUP WEBSOCKET CLIENT ---
 const socket = new WebSocket(WEBSOCKET_URL);
-socket.binaryType = 'arraybuffer'; // Tells browser to pass raw data out of RAM
+socket.binaryType = 'arraybuffer'; 
 
 socket.onopen = () => {
     console.log("Connected to Python Server!");
-    // Start the automated loop once the connection establishes
-    setInterval(streamFrame, SEND_INTERVAL_MS);
 };
 
 socket.onerror = (error) => {
@@ -29,6 +33,7 @@ socket.onerror = (error) => {
 
 socket.onclose = () => {
     console.log("Disconnected from Python Server.");
+    stopStreamingLoop();
 };
 
 function startCamera(facingMode) {
@@ -63,49 +68,26 @@ function startCamera(facingMode) {
 
 // --- AUTOMATED FRAME STREAMING FUNCTION ---
 function streamFrame() {
-    // 1. Must have active WebSocket
-    if (socket.readyState !== WebSocket.OPEN) {
-        console.log("Socket not ready");
-        return;
-    }
-
-    // 2. Must have valid camera frame
-    if (!webcamVideo.videoWidth || !webcamVideo.videoHeight) {
-        console.log("Video not ready");
-        return;
-    }
+    if (socket.readyState !== WebSocket.OPEN) return;
+    if (!webcamVideo.videoWidth || !webcamVideo.videoHeight) return;
 
     const ctx = captureCanvas.getContext("2d");
-
-    // 3. Always reset transforms first (IMPORTANT)
     ctx.setTransform(1, 0, 0, 1, 0, 0);
 
-    // 4. Match canvas to video size
     captureCanvas.width = webcamVideo.videoWidth;
     captureCanvas.height = webcamVideo.videoHeight;
 
-    // 5. Optional mirror for front camera
     if (currentFacingMode === "user") {
         ctx.translate(captureCanvas.width, 0);
         ctx.scale(-1, 1);
     }
 
-    // 6. Draw current frame
     ctx.drawImage(webcamVideo, 0, 0, captureCanvas.width, captureCanvas.height);
 
-    // 7. Encode and send
     captureCanvas.toBlob((blob) => {
-        if (!blob) {
-            console.log("toBlob failed");
-            return;
-        }
-
-        if (socket.readyState !== WebSocket.OPEN) return;
-
+        if (!blob || socket.readyState !== WebSocket.OPEN) return;
         socket.send(blob);
-        console.log("Sent frame:", blob.size, "bytes");
-
-    }, "image/jpeg", 0.85); // good balance of quality + speed
+    }, "image/jpeg", 0.6); 
 }
 
 // Toggle camera mode
@@ -114,8 +96,67 @@ flipBtn.addEventListener("click", () => {
     startCamera(currentFacingMode);
 });
 
-// Manual Capture Button Action (Kept intact)
+// Helper to fully clear and reset the tracking stream back to initial idle states
+function stopStreamingLoop() {
+    clearInterval(streamIntervalId);
+    streamIntervalId = null;
+    isTrackingActive = false;
+    
+    if (trackBtn) {
+        trackBtn.innerText = "Start Tracking";
+        trackBtn.classList.remove("stop-state");
+        trackBtn.disabled = false;
+    }
+    captureBtn.disabled = false;
+    timerSelect.disabled = false;
+}
+
+// Helper to start the active frame rendering loop
+function startStreamingLoop() {
+    clearInterval(streamIntervalId);
+    isTrackingActive = true;
+    
+    if (trackBtn) {
+        trackBtn.innerText = "Stop Tracking";
+        trackBtn.classList.add("stop-state");
+        trackBtn.disabled = false; // Always enabled so users can click stop manually!
+    }
+    captureBtn.disabled = false; 
+    timerSelect.disabled = false;
+    
+    streamIntervalId = setInterval(streamFrame, SEND_INTERVAL_MS);
+}
+
+// Capture Button logic
 captureBtn.addEventListener("click", () => {
+    // Lock controls down instantly during the capture countdown phase
+    captureBtn.disabled = true;
+    if (trackBtn) trackBtn.disabled = true;
+    timerSelect.disabled = true;
+
+    // Read the dropdown timer value exclusively for taking a picture
+    let countdownSeconds = parseInt(timerSelect.value) || 0;
+
+    const runCountdown = () => {
+        if (countdownSeconds > 0) {
+            if (countdownDisplay) countdownDisplay.innerText = countdownSeconds;
+            countdownSeconds--;
+            setTimeout(runCountdown, 1000);
+        } else {
+            if (countdownDisplay) countdownDisplay.innerText = "";
+            
+            // 1. Terminate the active tracking stream first when photo is officially snapped
+            stopStreamingLoop();
+            
+            // 2. Process and draw local visual confirmation capture frame
+            takePhotoPreview();
+        }
+    };
+
+    runCountdown();
+});
+
+function takePhotoPreview() {
     const ctx = captureCanvas.getContext("2d");
     captureCanvas.width = webcamVideo.videoWidth;
     captureCanvas.height = webcamVideo.videoHeight;
@@ -131,7 +172,25 @@ captureBtn.addEventListener("click", () => {
     const dataUrl = captureCanvas.toDataURL("image/jpeg");
     photoPreview.src = dataUrl;
     previewContainer.style.display = "block";
-});
+    
+    // Fully clear locks on interface targets
+    captureBtn.disabled = false;
+    if (trackBtn) trackBtn.disabled = false;
+    timerSelect.disabled = false;
+}
+
+// Tracking Button logic (FIXED: Fires instantly, completely independent of the timer dropdown)
+if (trackBtn) {
+    trackBtn.addEventListener("click", () => {
+        if (isTrackingActive) {
+            stopStreamingLoop();
+            console.log("Tracking manually stopped instantly.");
+        } else {
+            startStreamingLoop();
+            console.log("Tracking manually started instantly.");
+        }
+    });
+}
 
 // Initialize camera on load
 startCamera(currentFacingMode);
