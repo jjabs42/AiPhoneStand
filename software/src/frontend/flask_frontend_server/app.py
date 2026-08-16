@@ -1,12 +1,26 @@
 from flask import Flask, render_template
 from flask_sock import Sock
 from software.src.backend.tracker.face_detector import run_face_tracking, get_commands
+import asyncio
+from websockets.asyncio.server import serve
 import time
 
+
+class Data:
+    def __init__(self):
+        self.data = None
+
+    def get(self):
+        return self.data
+
+    def set(self, data):
+        self.data = data
 
 
 app = Flask(__name__)
 sock = Sock(app)
+
+data = Data()
 
 # This route serves your HTML file when anyone visits your website
 @app.route('/')
@@ -21,7 +35,7 @@ def echo(sock):
         
         print(get_commands(data))
 
-        image, face_pts, center  = run_face_tracking(data)
+        image, face_pts, center = run_face_tracking(data)
 
         
 

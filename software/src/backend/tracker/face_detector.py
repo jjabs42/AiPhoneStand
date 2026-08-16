@@ -6,7 +6,6 @@ import sys
 
 def get_commands(img):
     
-
     _, pts, center = run_face_tracking(img)
    
     print(pts,center)
@@ -14,8 +13,8 @@ def get_commands(img):
     '''
     The signage (-) is meant to get the difference from the perspective of the camera/motors.
     For example, if the head moves right, the x value would be negative because the motor must move left. I also had to
-    take into account the fact that the pixel coodianates start from the top left, not the middle. So that is the cause for 
-    the order in which I subtract each value. The final coodinates assume that the origin is in the center of the image.
+    take into account the fact that the pixel coordinates start from the top left, not the middle. So that is the cause for 
+    the order in which I subtract each value. The final coordinates assume that the origin is in the center of the image.
     '''
 
     #gets the difference between the face and the center | adding multiple faces later using averages
@@ -56,7 +55,7 @@ def run_face_tracking(img):
         boxes = i.boxes
 
         for box in boxes:
-            #gets "coodinates" from the Box object
+            #gets "coordinates" from the Box object
     
             #unpacking an array
             x1, y1, x2, y2 = box.xyxy[0]
