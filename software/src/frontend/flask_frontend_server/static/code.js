@@ -1,6 +1,6 @@
 // --- WEBSOCKET & TIMING PARAMETERS, Created with llms ---
 const WEBSOCKET_URL = `wss://${window.location.hostname}:5555/stream`;
-const SEND_INTERVAL_MS = 150; // Change this number! (2000ms = every 2 seconds)
+const SEND_INTERVAL_MS = 1000; // Change this number! (2000ms = every 2 seconds)
 
 const webcamVideo = document.getElementById("webcamVideo");
 const flipBtn = document.getElementById("flipBtn");

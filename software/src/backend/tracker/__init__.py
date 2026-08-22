@@ -1,1 +1,1 @@
-from .face_detector import get_commands
+from .face_detector import get_commands_simple

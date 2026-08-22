@@ -1,28 +1,91 @@
 #include <Arduino.h>
 #include <WiFiS3.h> 
 #include <Servo.h>
-#include <ArduinoWebsockets.h>
+#include <WebSocketsClient.h>
+#include <stdarg.h>
+#include <stdio.h>
+#include <ArduinoJson.h>
 
+
+
+WebSocketsClient webSocket;
+
+
+//constants
 const char* ssid = "";
 const char* pw = "";
-const char* websockets_server_host = "serverip_or_name"; //Enter server adress
-const uint16_t websockets_server_port = 8080; // Enter server port
+const int pin3 = 3;
+const int pin5 = 5;
 
-websockets websocket = websockets(90)
 
 Servo myservo1;
 Servo myservo2;
-int pin3 = 3;
-int pin5 = 5;
+
+float lastCommand[2];
+volatile bool messAv = false;
+String previous = "";
+
+void webSocketEvent(WStype_t type, uint8_t *payload, size_t length) {
+
+  switch (type) {
+    case WStype_DISCONNECTED:
+      Serial.println("[WSc] Disconnected!");
+      break;
+    case WStype_CONNECTED:
+      Serial.println("[WSc] Connected!");
+      
+
+      // send message to server when Connected
+      webSocket.sendTXT("Connected");
+      break;
+    case WStype_TEXT:{
+    
+    //json conversion
+    JsonDocument doc;
+
+    DeserializationError error = deserializeJson(doc, payload, length);
+
+    if (error) {
+        Serial.println("JSON parsing failed");
+        break;
+    }
 
 
 
-//connects to wifi
+      Serial.print("[WSc] get text:");
+      float motors[2];
+      
+      motors[0] = doc[0];
+      motors[1] = doc[1];
+
+      lastCommand[0] = motors[0];
+      lastCommand[1] = motors[1];
+      
+      messAv = true;
+      // send message to server
+      // webSocket.sendTXT("message here");
+      break;
+       }
+    case WStype_BIN:
+      // send data to server
+      // webSocket.sendBIN(payload, length);
+      break;
+    case WStype_ERROR:
+    case WStype_FRAGMENT_TEXT_START:
+    case WStype_FRAGMENT_BIN_START:
+    case WStype_FRAGMENT:
+    
+      break;
+  }
+}
+
+
 void setup() {
 
   myservo1.attach(pin3);
   myservo2.attach(pin5);
-  // put your setup code here, to run once:
+ 
+
   Serial.begin(115200);
   delay(1000);
 
@@ -36,24 +99,45 @@ void setup() {
   }
 
 
-  delay(10000);
+  delay(5000);
   Serial.println("\n Connected to network");
-  Serial.println("\n NetworkIP is");
+  Serial.println("\n NetworkIP is ");
   Serial.println(WiFi.localIP());
+
+  webSocket.begin("192.168.68.62", 5556, "/stream");
+  
+
+  webSocket.onEvent(webSocketEvent);
+  
+
+  // try ever 5000 again if connection has failed
+  webSocket.setReconnectInterval(5000);
+  myservo1.write(90);
+  myservo2.write(90);
+}
+
+int bott = 90;
+int top = 90;
+
+void loop() {
+webSocket.loop();
+
+if (messAv == true){
+  
+
+  
+bott -= lastCommand[0];
+top -= lastCommand[1];
+bott = constrain(bott, 0, 180);
+top = constrain(top, 0, 180);
+Serial.println(bott);
+Serial.println(top);
+messAv = false;
+  
   
 }
 
-void loop() {
-myservo1.write(0);
-myservo2.write(0);
-delay(1500);
-myservo1.write(180);
-myservo2.write(180);
-delay(1500);
-myservo1.write(90);
-myservo2.write(70);
-delay(1500);
-myservo1.write(46);
-myservo2.write(40);
-delay(1500);
+myservo1.write((int) bott);
+myservo2.write((int) top);
+
 }

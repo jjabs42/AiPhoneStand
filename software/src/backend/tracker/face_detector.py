@@ -4,11 +4,36 @@ from ultralytics import YOLO
 import numpy as np
 import sys
 
-def get_commands(img):
+
+horizontal_fov = 68
+vertical_fov = 51
+
+class Size:
+    def __init__(self):
+        self.size = None
+
+    def get(self):
+        return self.size
+
+    def set(self, size):
+        self.size = size
+
+
+size = Size()
+
+
+
+
+
+#using shaky conversion factors to get angle, will use pid soon
+def get_commands_simple(img):
     
     _, pts, center = run_face_tracking(img)
-   
-    print(pts,center)
+
+
+    #creates conversion factor in degrees/px
+    h_ratio = horizontal_fov / size.get()[0] 
+    v_ratio = vertical_fov / size.get()[1] 
    
     '''
     The signage (-) is meant to get the difference from the perspective of the camera/motors.
@@ -25,7 +50,12 @@ def get_commands(img):
     except IndexError:
         return("No Face Found")
 
-    return(x_dist, y_dist)
+    horiz_move = x_dist * h_ratio
+    vert_move = y_dist * v_ratio
+
+    degrees_moved = (horiz_move, vert_move)
+
+    return degrees_moved
 
 
 def run_face_tracking(img):
@@ -39,9 +69,16 @@ def run_face_tracking(img):
     #image.shape returns the height of the image and the width of the image, using to find center point
     height, width = image.shape[:2]
     
-    #I say x is width and y is height
+    size.set((width, height))
+
+    print(width, height)
+    #I say width is x
+    
     cent_x = width/2
     cent_y = height/2
+
+    
+    
     
 
 
@@ -70,11 +107,13 @@ def run_face_tracking(img):
             #draws bounding box right on image
             cv2.rectangle(image, (x1, y1), (x2, y2), (255, 255, 255), 10)
             cv2.circle(image, (int(cx1),int(cy1)), 5, (0,0,0), 10)
-            cv2.circle(image, (960, 540),5,(0,0,0), 10)       
+            cv2.circle(image, (int(cent_x), int(cent_y)),5,(0,0,0), 10)       
 
             
         
         image = cv2.flip(image, 1)
+        
+        #remind to remove(takes time)
         success, jpgArray = cv2.imencode(".jpg", image)
         
 
