@@ -21,6 +21,7 @@ class Size:
 
 size = Size()
 
+path = Path(__file__).resolve().parent.parent.parent.parent / "src/models/yolov12n-face.pt"
 
 
 
@@ -61,7 +62,7 @@ def get_commands_simple(img):
 def run_face_tracking(img):
     
     
-    path = Path(__file__).resolve().parent.parent.parent.parent / "src/models/yolov12n-face.pt"
+    
     # load model
     model = YOLO(path)  
     
