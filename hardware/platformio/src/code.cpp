@@ -17,14 +17,134 @@ const char* pw = "";
 const int pin3 = 3;
 const int pin5 = 5;
 
+//GLOBALS
+//___________________________________________________________________________________________________________//
 
+
+
+//determines if a message is available
+volatile bool messAv = false;
+
+
+//servo inits
 Servo myservo1;
 Servo myservo2;
 
-float lastCommand[2];
-volatile bool messAv = false;
-String previous = "";
 
+//x motor moves left to right, y moves up and down
+int currentXMotor;
+int currentYMotor;
+
+//___________________________________________________________________________________________________________//
+
+
+//calibration config
+void calibrate_selfie(JsonDocument& direction) {
+  int degrees = (int)direction["degrees"];
+  Serial.println(degrees);
+  Serial.println((String) direction["calibrationLR"]);
+
+  //conditionals to check where to move
+  if ((String)direction["calibrationLR"] == "l"){
+    for(int i=1; i < degrees; i++){
+    myservo1.write(currentXMotor - i);
+    
+    delay(10);
+    }
+    currentXMotor -= degrees;
+  }
+
+  else if (direction["calibrationLR"] == "r"){
+    for(int i=1; i < degrees; i++){
+    myservo1.write(currentXMotor + i);
+    
+    delay(10);
+    }
+    currentXMotor += degrees;
+
+  }
+
+  if (direction["calibrationUD"] == "u"){
+   for(int i=1; i < degrees; i++){
+    myservo2.write(currentYMotor + i);
+    
+    delay(10);
+    }
+    currentYMotor += degrees;
+
+  }
+
+  else if (direction["calibrationUD"] == "d"){
+    for(int i=1; i < degrees; i++){
+    myservo2.write(currentYMotor - i);
+    
+    delay(10);
+    }
+    currentYMotor -= degrees;
+
+        }
+      }
+
+void calibrate_environment(JsonDocument& direction){
+
+  int degrees = (int)direction["degrees"];
+  Serial.println(degrees);
+  Serial.println((String) direction["calibrationLR"]);
+
+  //conditionals to check where to move
+  if ((String)direction["calibrationLR"] == "l"){
+    for(int i=1; i < degrees; i++){
+    myservo1.write(currentXMotor + i);
+    
+    delay(10);
+    
+    }
+    currentXMotor += degrees;
+
+
+  }
+
+  else if (direction["calibrationLR"] == "r"){
+    for(int i=1; i < degrees; i++){
+    myservo1.write(currentXMotor - i);
+    
+    delay(10);
+    }
+    currentXMotor -= degrees;
+
+  }
+
+  if (direction["calibrationUD"] == "u"){
+   for(int i=1; i < degrees; i++){
+    myservo2.write(currentYMotor - i);
+    
+    delay(10);
+    }
+    currentYMotor -= degrees;
+
+  }
+
+  else if (direction["calibrationUD"] == "d"){
+    for(int i=1; i < degrees; i++){
+    myservo2.write(currentYMotor + i);
+    
+    delay(10);
+    }
+    currentYMotor += degrees;
+        }
+
+}
+
+
+
+
+
+
+
+
+
+
+//basically a function that each determines the state of the socket
 void webSocketEvent(WStype_t type, uint8_t *payload, size_t length) {
 
   switch (type) {
@@ -38,54 +158,83 @@ void webSocketEvent(WStype_t type, uint8_t *payload, size_t length) {
       // send message to server when Connected
       webSocket.sendTXT("Connected");
       break;
+    
+    
+    //if text is received  
     case WStype_TEXT:{
     
     //json conversion
     JsonDocument doc;
-
     DeserializationError error = deserializeJson(doc, payload, length);
-
     if (error) {
         Serial.println("JSON parsing failed");
         break;
     }
 
-
-
-      Serial.print("[WSc] get text:");
-      float motors[2];
       
-      motors[0] = doc[0];
-      motors[1] = doc[1];
 
-      lastCommand[0] = motors[0];
-      lastCommand[1] = motors[1];
+      if(doc["move"]){
+        int i = doc["move"];
+        myservo1.write(i);
+        myservo2.write(i);
+        currentXMotor = i;
+        currentYMotor = i;
+      }
+  
+
+      //starts calibration
+      if (doc["type"] == "calibration")
+      {
+        Serial.println((String)doc["type"]);
+        myservo1.write(90);
+        myservo2.write(90);
+        currentXMotor = 90;
+        currentYMotor = 90;
+        delay(1000);
+
+        if (doc["facingMode"] == "user"){
+          calibrate_selfie(doc);
+        }
+
+        else if(doc["facingMode"] == "environment"){
+          calibrate_environment(doc);
+        }
+      }
+
+
+
       
+      
+      if (doc["type"] == "tracking")
+    {
+      Serial.print("Received Tracking Info:");
+      myservo1.write(currentXMotor + (int)doc["xMotor"]);
+      myservo2.write(currentYMotor + (int)doc["yMotor"]);
+      currentXMotor += (int)doc["xMotor"];
+      currentYMotor += (int)doc["yMotor"];
+      delay(2000);
+      
+     
       messAv = true;
+    }
       // send message to server
-      // webSocket.sendTXT("message here");
       break;
-       }
-    case WStype_BIN:
-      // send data to server
-      // webSocket.sendBIN(payload, length);
-      break;
-    case WStype_ERROR:
-    case WStype_FRAGMENT_TEXT_START:
-    case WStype_FRAGMENT_BIN_START:
-    case WStype_FRAGMENT:
+       
     
-      break;
+      
   }
+}
 }
 
 
+//when arduino is turned on
 void setup() {
 
   myservo1.attach(pin3);
   myservo2.attach(pin5);
  
 
+  //wifi connection stuff
   Serial.begin(115200);
   delay(1000);
 
@@ -114,30 +263,14 @@ void setup() {
   webSocket.setReconnectInterval(5000);
   myservo1.write(90);
   myservo2.write(90);
+  currentXMotor = 90;
+  currentYMotor = 90;
 }
 
-int bott = 90;
-int top = 90;
 
+//sets the two to match the position
 void loop() {
 webSocket.loop();
 
-if (messAv == true){
-  
-
-  
-bott -= lastCommand[0];
-top -= lastCommand[1];
-bott = constrain(bott, 0, 180);
-top = constrain(top, 0, 180);
-Serial.println(bott);
-Serial.println(top);
-messAv = false;
-  
-  
-}
-
-myservo1.write((int) bott);
-myservo2.write((int) top);
 
 }

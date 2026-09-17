@@ -8,12 +8,12 @@
         {
             "name": "PlatformIO",
             "includePath": [
-                "/Users/jjabs/Downloads/AI_Phone_Stand/hardware/platformio/src",
-                "/Users/jjabs/Downloads/AI_Phone_Stand/hardware/platformio/.pio/libdeps/uno_r4_wifi/ArduinoJson/src",
-                "/Users/jjabs/Downloads/AI_Phone_Stand/hardware/platformio/.pio/libdeps/uno_r4_wifi/WebSockets/src",
+                "/Users/jjabs/Downloads/AiPhoneStand/hardware/platformio/src",
+                "/Users/jjabs/Downloads/AiPhoneStand/hardware/platformio/.pio/libdeps/uno_r4_wifi/ArduinoJson/src",
+                "/Users/jjabs/Downloads/AiPhoneStand/hardware/platformio/.pio/libdeps/uno_r4_wifi/WebSockets/src",
                 "/Users/jjabs/.platformio/packages/framework-arduinorenesas-uno/libraries/WiFiS3/src",
                 "/Users/jjabs/.platformio/packages/framework-arduinorenesas-uno/libraries/SPI",
-                "/Users/jjabs/Downloads/AI_Phone_Stand/hardware/platformio/.pio/libdeps/uno_r4_wifi/Servo/src",
+                "/Users/jjabs/Downloads/AiPhoneStand/hardware/platformio/.pio/libdeps/uno_r4_wifi/Servo/src",
                 "/Users/jjabs/.platformio/packages/framework-arduinorenesas-uno/cores/arduino/tinyusb",
                 "/Users/jjabs/.platformio/packages/framework-arduinorenesas-uno/cores/arduino",
                 "/Users/jjabs/.platformio/packages/framework-arduinorenesas-uno/cores/arduino/api/deprecated",
@@ -44,12 +44,12 @@
             "browse": {
                 "limitSymbolsToIncludedHeaders": true,
                 "path": [
-                    "/Users/jjabs/Downloads/AI_Phone_Stand/hardware/platformio/src",
-                    "/Users/jjabs/Downloads/AI_Phone_Stand/hardware/platformio/.pio/libdeps/uno_r4_wifi/ArduinoJson/src",
-                    "/Users/jjabs/Downloads/AI_Phone_Stand/hardware/platformio/.pio/libdeps/uno_r4_wifi/WebSockets/src",
+                    "/Users/jjabs/Downloads/AiPhoneStand/hardware/platformio/src",
+                    "/Users/jjabs/Downloads/AiPhoneStand/hardware/platformio/.pio/libdeps/uno_r4_wifi/ArduinoJson/src",
+                    "/Users/jjabs/Downloads/AiPhoneStand/hardware/platformio/.pio/libdeps/uno_r4_wifi/WebSockets/src",
                     "/Users/jjabs/.platformio/packages/framework-arduinorenesas-uno/libraries/WiFiS3/src",
                     "/Users/jjabs/.platformio/packages/framework-arduinorenesas-uno/libraries/SPI",
-                    "/Users/jjabs/Downloads/AI_Phone_Stand/hardware/platformio/.pio/libdeps/uno_r4_wifi/Servo/src",
+                    "/Users/jjabs/Downloads/AiPhoneStand/hardware/platformio/.pio/libdeps/uno_r4_wifi/Servo/src",
                     "/Users/jjabs/.platformio/packages/framework-arduinorenesas-uno/cores/arduino/tinyusb",
                     "/Users/jjabs/.platformio/packages/framework-arduinorenesas-uno/cores/arduino",
                     "/Users/jjabs/.platformio/packages/framework-arduinorenesas-uno/cores/arduino/api/deprecated",
@@ -79,7 +79,7 @@
                 ]
             },
             "defines": [
-                "PLATFORMIO=60119",
+                "PLATFORMIO=60200",
                 "ARDUINO_UNOWIFIR4",
                 "ARDUINO_ARCH_RENESAS_UNO",
                 "ARDUINO_UNOR4_WIFI",

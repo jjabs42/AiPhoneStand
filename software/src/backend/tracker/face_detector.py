@@ -5,8 +5,7 @@ import numpy as np
 import sys
 
 
-horizontal_fov = 68
-vertical_fov = 51
+
 
 class Size:
     def __init__(self):
@@ -24,39 +23,21 @@ size = Size()
 path = Path(__file__).resolve().parent.parent.parent.parent / "src/models/yolov12n-face.pt"
 
 
-
-
-#using shaky conversion factors to get angle, will use pid soon
-def get_commands_simple(img):
-    
-    _, pts, center = run_face_tracking(img)
-
-
-    #creates conversion factor in degrees/px
-    h_ratio = horizontal_fov / size.get()[0] 
-    v_ratio = vertical_fov / size.get()[1] 
-   
-    '''
-    The signage (-) is meant to get the difference from the perspective of the camera/motors.
-    For example, if the head moves right, the x value would be negative because the motor must move left. I also had to
-    take into account the fact that the pixel coordinates start from the top left, not the middle. So that is the cause for 
-    the order in which I subtract each value. The final coordinates assume that the origin is in the center of the image.
-    '''
-
-    #gets the difference between the face and the center | adding multiple faces later using averages
+#conversion in px/degrees so px cancels out
+def motor_angle(img, conversion)-> tuple:
     try:
-        x_dist = center[0]-pts[0][0]
-        
-        y_dist = center[1]-pts[0][1]
-    except IndexError:
-        return("No Face Found")
+        mdpts, center = run_face_tracking(img)
+        print(mdpts,center)
+        x = mdpts[0][0] - center[0]
+        y = mdpts[0][1] - center[1]
+   
 
-    horiz_move = x_dist * h_ratio
-    vert_move = y_dist * v_ratio
+    
+        return(x*(1/conversion), y*(1/conversion))
+    except Exception as e:
+        print(e)
 
-    degrees_moved = (horiz_move, vert_move)
 
-    return degrees_moved
 
 
 def run_face_tracking(img):
@@ -70,6 +51,7 @@ def run_face_tracking(img):
     #image.shape returns the height of the image and the width of the image, using to find center point
     height, width = image.shape[:2]
     
+    
     size.set((width, height))
 
     print(width, height)
@@ -77,7 +59,7 @@ def run_face_tracking(img):
     
     cent_x = width/2
     cent_y = height/2
-
+    center = (cent_x, cent_y)   
     
     
     
@@ -108,20 +90,14 @@ def run_face_tracking(img):
             #draws bounding box right on image
             cv2.rectangle(image, (x1, y1), (x2, y2), (255, 255, 255), 10)
             cv2.circle(image, (int(cx1),int(cy1)), 5, (0,0,0), 10)
-            cv2.circle(image, (int(cent_x), int(cent_y)),5,(0,0,0), 10)       
+            cv2.circle(image, (int(cent_x), int(cent_y)),5,(0,0,0), 10)   
+         
 
             
         
         image = cv2.flip(image, 1)
-        
-        #remind to remove(takes time)
-        success, jpgArray = cv2.imencode(".jpg", image)
-        
-
-        if success:
-            jpgBytes = jpgArray.tobytes()
-            #returning all 3 to display image in memory
-            return jpgBytes, mdpts, (cent_x, cent_y)
+              
+        return mdpts, center
 
     
 def main():

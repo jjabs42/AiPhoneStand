@@ -1,1 +1,1 @@
-from .face_detector import get_commands_simple
+from .face_detector import run_face_tracking, motor_angle

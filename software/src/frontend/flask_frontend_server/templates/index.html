@@ -1,6 +1,3 @@
-<!--USED A LLM TO GENERATE THIS-->
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,12 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="{{url_for('static', filename='styles.css')}}" rel="stylesheet">
     <title>Webcam Stream & Capture</title>
-    
 </head>
 <body>
 
     <!-- Countdown overlay display element -->
     <div id="countdownDisplay"></div>
+
+    <!-- Calibration message overlay -->
+    <div id="calibrationOverlay">
+        <h2>Calibrating...</h2>
+        <p>Place your face in front of the camera and hold still.</p>
+        <button id="startCalibrateBtn" class="StartCaliBtn" style="background-color: #34c759; color: white; margin-top: 15px;">Start</button>
+    </div>
 
     <video id="webcamVideo" autoplay playsinline muted></video>
     
@@ -28,8 +31,8 @@
 
         <button id="flipBtn" class="btn">Flip Camera</button>
         <button id="captureBtn" class="btn" style="background-color: #ff3b30; color: white;">Take Picture</button>
-        <!-- NEW: Start Tracking Button -->
         <button id="trackBtn" class="btn" style="background-color: #007aff; color: white;">Start Tracking</button>
+        <button id="calibrateBtn" class="btn" style="background-color: #34c759; color: white;">Calibrate</button>
     </div>
 
     <div id="previewContainer">

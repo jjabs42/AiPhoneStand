@@ -1,18 +1,22 @@
-// --- WEBSOCKET & TIMING PARAMETERS, Created with llms ---
+// --- WEBSOCKET & TIMING PARAMETERS// Made with LLMs
 const WEBSOCKET_URL = `wss://${window.location.hostname}:5555/stream`;
-const SEND_INTERVAL_MS = 1000; // Change this number! (2000ms = every 2 seconds)
+const SEND_INTERVAL_MS = 2000; 
+const CALIBRATION_DELAY_MS = 3000; // Time in ms to wait before sending Frame 2
 
 const webcamVideo = document.getElementById("webcamVideo");
 const flipBtn = document.getElementById("flipBtn");
 const captureBtn = document.getElementById("captureBtn");
 const trackBtn = document.getElementById("trackBtn"); 
+const calibrateBtn = document.getElementById("calibrateBtn");
+const startCalibrateBtn = document.getElementById("startCalibrateBtn");
 const captureCanvas = document.getElementById("captureCanvas");
 const previewContainer = document.getElementById("previewContainer");
 const photoPreview = document.getElementById("photoPreview");
 
-// UI ELEMENTS FOR TIMER
+// UI ELEMENTS FOR TIMER & OVERLAYS
 const timerSelect = document.getElementById("timerSelect"); 
 const countdownDisplay = document.getElementById("countdownDisplay"); 
+const calibrationOverlay = document.getElementById("calibrationOverlay");
 
 let currentStream = null;
 let currentFacingMode = "user"; 
@@ -21,7 +25,6 @@ let isTrackingActive = false;
 
 // --- SETUP WEBSOCKET CLIENT ---
 const socket = new WebSocket(WEBSOCKET_URL);
-socket.binaryType = 'arraybuffer'; 
 
 socket.onopen = () => {
     console.log("Connected to Python Server!");
@@ -35,6 +38,36 @@ socket.onclose = () => {
     console.log("Disconnected from Python Server.");
     stopStreamingLoop();
 };
+
+// --- WEBSOCKET INCOMING MESSAGE HANDLING ---
+socket.onmessage = (event) => {
+    if (typeof event.data === "string") {
+        if (event.data === "CalibrationComplete" || event.data === "CalibrationDone") {
+            console.log("Received calibration completion from Python server.");
+            
+            if (calibrationOverlay) {
+                calibrationOverlay.style.display = "none";
+            }
+            if (startCalibrateBtn) {
+                startCalibrateBtn.disabled = false;
+                startCalibrateBtn.innerText = "Start";
+            }
+            if (calibrateBtn) {
+                calibrateBtn.innerText = "Calibrate";
+            }
+            setControlsDisabled(false);
+        }
+    }
+};
+
+// Unified UI control locker/unlocker
+function setControlsDisabled(disabledState) {
+    if (flipBtn) flipBtn.disabled = disabledState;
+    if (captureBtn) captureBtn.disabled = disabledState;
+    if (trackBtn) trackBtn.disabled = disabledState;
+    if (calibrateBtn) calibrateBtn.disabled = disabledState;
+    if (timerSelect) timerSelect.disabled = disabledState;
+}
 
 function startCamera(facingMode) {
     if (currentStream) {
@@ -66,7 +99,7 @@ function startCamera(facingMode) {
         });
 }
 
-// --- AUTOMATED FRAME STREAMING FUNCTION ---
+// --- AUTOMATED FRAME STREAMING FUNCTION (JSON PAYLOAD) ---
 function streamFrame() {
     if (socket.readyState !== WebSocket.OPEN) return;
     if (!webcamVideo.videoWidth || !webcamVideo.videoHeight) return;
@@ -84,10 +117,15 @@ function streamFrame() {
 
     ctx.drawImage(webcamVideo, 0, 0, captureCanvas.width, captureCanvas.height);
 
-    captureCanvas.toBlob((blob) => {
-        if (!blob || socket.readyState !== WebSocket.OPEN) return;
-        socket.send(blob);
-    }, "image/jpeg", 0.6); 
+    // Convert canvas directly to base64 Data URL
+    const base64Image = captureCanvas.toDataURL("image/jpeg", 0.6);
+
+    const payload = JSON.stringify({
+        facingMode: currentFacingMode, // "user" or "environment"
+        image: base64Image
+    });
+
+    socket.send(payload);
 }
 
 // Toggle camera mode
@@ -96,7 +134,7 @@ flipBtn.addEventListener("click", () => {
     startCamera(currentFacingMode);
 });
 
-// Helper to fully clear and reset the tracking stream back to initial idle states
+// Helper to fully clear and reset tracking loop
 function stopStreamingLoop() {
     clearInterval(streamIntervalId);
     streamIntervalId = null;
@@ -105,10 +143,11 @@ function stopStreamingLoop() {
     if (trackBtn) {
         trackBtn.innerText = "Start Tracking";
         trackBtn.classList.remove("stop-state");
-        trackBtn.disabled = false;
     }
-    captureBtn.disabled = false;
-    timerSelect.disabled = false;
+
+    if (calibrateBtn && calibrateBtn.innerText !== "Calibrating...") {
+        setControlsDisabled(false);
+    }
 }
 
 // Helper to start the active frame rendering loop
@@ -119,22 +158,15 @@ function startStreamingLoop() {
     if (trackBtn) {
         trackBtn.innerText = "Stop Tracking";
         trackBtn.classList.add("stop-state");
-        trackBtn.disabled = false; // Always enabled so users can click stop manually!
     }
-    captureBtn.disabled = false; 
-    timerSelect.disabled = false;
     
     streamIntervalId = setInterval(streamFrame, SEND_INTERVAL_MS);
 }
 
 // Capture Button logic
 captureBtn.addEventListener("click", () => {
-    // Lock controls down instantly during the capture countdown phase
-    captureBtn.disabled = true;
-    if (trackBtn) trackBtn.disabled = true;
-    timerSelect.disabled = true;
+    setControlsDisabled(true);
 
-    // Read the dropdown timer value exclusively for taking a picture
     let countdownSeconds = parseInt(timerSelect.value) || 0;
 
     const runCountdown = () => {
@@ -144,11 +176,7 @@ captureBtn.addEventListener("click", () => {
             setTimeout(runCountdown, 1000);
         } else {
             if (countdownDisplay) countdownDisplay.innerText = "";
-            
-            // 1. Terminate the active tracking stream first when photo is officially snapped
             stopStreamingLoop();
-            
-            // 2. Process and draw local visual confirmation capture frame
             takePhotoPreview();
         }
     };
@@ -173,13 +201,10 @@ function takePhotoPreview() {
     photoPreview.src = dataUrl;
     previewContainer.style.display = "block";
     
-    // Fully clear locks on interface targets
-    captureBtn.disabled = false;
-    if (trackBtn) trackBtn.disabled = false;
-    timerSelect.disabled = false;
+    setControlsDisabled(false);
 }
 
-// Tracking Button logic (FIXED: Fires instantly, completely independent of the timer dropdown)
+// Tracking Button logic
 if (trackBtn) {
     trackBtn.addEventListener("click", () => {
         if (isTrackingActive) {
@@ -189,6 +214,45 @@ if (trackBtn) {
             startStreamingLoop();
             console.log("Tracking manually started instantly.");
         }
+    });
+}
+
+// 1. Calibrate Button Logic: Shows the overlay prompt
+if (calibrateBtn) {
+    calibrateBtn.addEventListener("click", () => {
+        if (calibrationOverlay) calibrationOverlay.style.display = "flex";
+        socket.send(JSON.stringify({"CalibrationInitiated" : true}))
+    });
+}
+
+// 2. Start Calibration Button Logic
+if (startCalibrateBtn) {
+    startCalibrateBtn.addEventListener("click", () => {
+        if (socket.readyState !== WebSocket.OPEN) {
+            console.error("WebSocket connection is not open.");
+            return;
+        }
+
+        setControlsDisabled(true);
+        startCalibrateBtn.disabled = true;
+        startCalibrateBtn.innerText = "Calibrating...";
+        if (calibrateBtn) calibrateBtn.innerText = "Calibrating...";
+
+        // Step 1: Send JSON signal to Python server
+        socket.send(JSON.stringify({ action: "CalibrationActive" }));
+        console.log("Sent 'CalibrationActive' signal to server.");
+
+        // Step 2: Send Frame 1 immediately
+        streamFrame();
+        console.log("Sent Calibration Frame 1.");
+
+        // Step 3: Wait CALIBRATION_DELAY_MS and send Frame 2
+        setTimeout(() => {
+            if (socket.readyState === WebSocket.OPEN) {
+                streamFrame();
+                console.log(`Sent Calibration Frame 2 after ${CALIBRATION_DELAY_MS}ms.`);
+            }
+        }, CALIBRATION_DELAY_MS);
     });
 }
 

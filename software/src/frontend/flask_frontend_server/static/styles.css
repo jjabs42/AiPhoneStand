@@ -24,11 +24,10 @@ html, body {
     display: flex;
     gap: 12px;
     z-index: 10;
-    /* Alignment fixes for iPhone */
     width: 90%;
-    max-width: 540px;
+    max-width: 640px;
     justify-content: center;
-    align-items: center; /* Ensures dropdown and normal buttons line up perfectly */
+    align-items: center;
     flex-wrap: wrap;
     box-sizing: border-box;
     padding-bottom: env(safe-area-inset-bottom, 0px);
@@ -49,34 +48,27 @@ html, body {
     text-align: center;
     white-space: nowrap;
     min-width: 70px;
-    box-sizing: border-box; /* Fixes height mismatch bugs across mobile browsers */
-    height: 44px; /* Force uniform vertical height across all control buttons */
+    box-sizing: border-box;
+    height: 44px;
     display: inline-flex;
     justify-content: center;
     align-items: center;
 }
 
-/* Specific overrides for the select dropdown element to match pills */
 select.btn {
     appearance: none;
     -webkit-appearance: none;
     -moz-appearance: none;
-    
-    /* Balanced horizontal padding to force text into the true center */
     padding-left: 26px;  
     padding-right: 26px; 
-    
     background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://w3.org' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
     background-repeat: no-repeat;
     background-position: right 14px center;
     background-size: 12px;
-    
-    /* Cross-browser alignment fallbacks for the button text content */
     text-align: center;
     text-align-last: center; 
 }
 
-/* Centers choice strings inside expanded dropdown menu list overlays */
 select.btn option {
     text-align: center;
 }
@@ -90,7 +82,6 @@ select.btn option {
     background-color: rgb(220, 220, 220);
 }
 
-/* Specific background hover overrides for the colored action targets */
 #captureBtn:hover {
     background-color: #e03026 !important;
 }
@@ -99,9 +90,12 @@ select.btn option {
     background-color: #0066d6 !important;
 }
 
-/* Active Stop Tracking class triggered by JavaScript */
+#calibrateBtn:hover, #startCalibrateBtn:hover {
+    background-color: #28a745 !important;
+}
+
 #trackBtn.stop-state {
-    background-color: #ff9500 !important; /* Changes tracking button to orange */
+    background-color: #ff9500 !important;
     color: white !important;
 }
 
@@ -109,7 +103,6 @@ select.btn option {
     background-color: #cc7600 !important;
 }
 
-/* Grayed out visual treatment for inactive state handling */
 .btn:disabled {
     background-color: #555555 !important;
     color: #aaaaaa !important;
@@ -118,7 +111,6 @@ select.btn option {
     box-shadow: none;
 }
 
-/* Photo preview styling */
 #previewContainer {
     position: absolute;
     top: 20px;
@@ -138,7 +130,6 @@ select.btn option {
     border-radius: 5px;
 }
 
-/* Centered countdown overlay text rules */
 #countdownDisplay {
     position: absolute;
     top: 50%;
@@ -153,7 +144,37 @@ select.btn option {
     user-select: none;
 }
 
-/* Media Query explicitly managing tiny or narrow screen sizes */
+/* Centered calibration prompt overlay */
+#calibrationOverlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.85);
+    color: #ffffff;
+    padding: 24px 32px;
+    border-radius: 16px;
+    text-align: center;
+    z-index: 30;
+    display: none; /* Hidden by default */
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    flex-direction: column;
+    align-items: center;
+}
+
+#calibrationOverlay h2 {
+    margin: 0 0 8px 0;
+    font-size: 1.8rem;
+    color: #34c759;
+}
+
+#calibrationOverlay p {
+    margin: 0;
+    font-size: 1rem;
+    color: #e5e5e5;
+}
+
 @media (max-width: 420px) {
     .controls {
         gap: 8px;
@@ -170,4 +191,37 @@ select.btn option {
         padding-right: 18px;
         background-position: right 8px center;
     }
+    #calibrationOverlay {
+        width: 80%;
+        padding: 16px 20px;
+    }
+    #calibrationOverlay h2 {
+        font-size: 1.4rem;
+    }
+    #calibrationOverlay p {
+        font-size: 0.9rem;
+    }
+}
+
+
+.StartCaliBtn {
+    padding: 12px 20px;
+    font-size: 14px;
+    font-weight: bold;
+    background-color: rgba(255, 255, 255, 0.85);
+    color: #000000;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    transition: background-color 0.2s, transform 0.1s;
+    flex: 1 1 auto;
+    text-align: center;
+    white-space: nowrap;
+    min-width: 200px;
+    box-sizing: border-box;
+    height: 100px;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
 }
