@@ -57,7 +57,13 @@ socket.onmessage = (event) => {
             }
             setControlsDisabled(false);
         }
+
+        if (event.data === "CalibrationFailed"){
+            console.log("Calibration Failed");
+            setControlsDisabled(false)
+        }
     }
+        
 };
 
 // Unified UI control locker/unlocker

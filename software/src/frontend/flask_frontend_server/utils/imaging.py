@@ -9,7 +9,7 @@ def toImage(frame):
             frame = frame.split(",")[1]
 
         #to bytes
-        base64.b64decode(frame)
+        frame = base64.b64decode(frame)
         return frame
     except Exception as e:
         print(e)
