@@ -2,7 +2,7 @@ import json
 from .imaging import toImage
 from ....backend.tracker import run_face_tracking
 import time
-from .arduinoSender import send
+from .arduinoSender import sendAmount, sendTo
 
 #determines if calibration should move x degrees right or x degrees left(up or down too), returning the bottom motor first...Always starting at 90
 def motorMove(mdpts, center, facingMode, degreesMoved)->tuple:
@@ -51,7 +51,7 @@ def calibrate(sock, calibrationDegrees):
     directions = list(directions)
 
     #sends motor commands
-    send(directions)
+    sendAmount(directions)
 
 
 
@@ -71,15 +71,21 @@ def calibrate(sock, calibrationDegrees):
 
 
     try:
-    #determines the conversion factor for px/degrees(probably won't be different but it could be)
+    #determines the conversion factor for px/degrees(probably won't be different but it could be because of distortion)
         conversionX = abs((mdptsFinal[0][0] - mdptsInit[0][0])/calibrationDegrees)
         conversionY = abs((mdptsFinal[0][1] - mdptsInit[0][1])/calibrationDegrees)
         pxByDegrees = (conversionX+conversionY)/2
+        
     except (IndexError) as e:
         print(e)
         sock.send("CalibrationFailed")
+        sendTo([90,90])
+        return 0
 
     else:
         sock.send("CalibrationComplete")
+        sendTo([90,90])
+        return pxByDegrees
+        
 
-    send([90,90])
+    

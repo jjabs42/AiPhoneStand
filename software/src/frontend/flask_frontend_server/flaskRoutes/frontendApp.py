@@ -1,7 +1,8 @@
 import json
 from . import shared
-from ....backend.tracker import run_face_tracking, motor_angle
-from ..utils import calibrate, toImage
+from ....backend.tracker import motor_angle
+from ..utils import calibrate
+from ..utils import sendTo
 
 
 
@@ -25,7 +26,8 @@ def registerSocket(sock):
 
             
             if jsonData.get("CalibrationInitiated") == True:
-                shared.clickedCal = True
+                sendTo([90,90])
+
 
 
             
@@ -45,7 +47,6 @@ def registerSocket(sock):
                 try:
                     #takes a frame and detects difference between face and center. Uses motor conversion to find the motor angle required
                     motorData = motor_angle(data, shared.pxByDegrees)
-                    shared.dataReady = True
                 except AttributeError:
                     print("Not Calibrated")
                 

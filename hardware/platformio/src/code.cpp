@@ -5,6 +5,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <ArduinoJson.h>
+#include <list>
 
 
 
@@ -21,119 +22,12 @@ const int pin5 = 5;
 //___________________________________________________________________________________________________________//
 
 
-
-//determines if a message is available
-volatile bool messAv = false;
-
-
 //servo inits
 Servo myservo1;
 Servo myservo2;
 
-
-//x motor moves left to right, y moves up and down
-int currentXMotor;
-int currentYMotor;
-
 //___________________________________________________________________________________________________________//
 
-
-//calibration config
-void calibrate_selfie(JsonDocument& direction) {
-  int degrees = (int)direction["degrees"];
-  Serial.println(degrees);
-  Serial.println((String) direction["calibrationLR"]);
-
-  //conditionals to check where to move
-  if ((String)direction["calibrationLR"] == "l"){
-    for(int i=1; i < degrees; i++){
-    myservo1.write(currentXMotor - i);
-    
-    delay(10);
-    }
-    currentXMotor -= degrees;
-  }
-
-  else if (direction["calibrationLR"] == "r"){
-    for(int i=1; i < degrees; i++){
-    myservo1.write(currentXMotor + i);
-    
-    delay(10);
-    }
-    currentXMotor += degrees;
-
-  }
-
-  if (direction["calibrationUD"] == "u"){
-   for(int i=1; i < degrees; i++){
-    myservo2.write(currentYMotor + i);
-    
-    delay(10);
-    }
-    currentYMotor += degrees;
-
-  }
-
-  else if (direction["calibrationUD"] == "d"){
-    for(int i=1; i < degrees; i++){
-    myservo2.write(currentYMotor - i);
-    
-    delay(10);
-    }
-    currentYMotor -= degrees;
-
-        }
-      }
-
-void calibrate_environment(JsonDocument& direction){
-
-  int degrees = (int)direction["degrees"];
-  Serial.println(degrees);
-  Serial.println((String) direction["calibrationLR"]);
-
-  //conditionals to check where to move
-  if ((String)direction["calibrationLR"] == "l"){
-    for(int i=1; i < degrees; i++){
-    myservo1.write(currentXMotor + i);
-    
-    delay(10);
-    
-    }
-    currentXMotor += degrees;
-
-
-  }
-
-  else if (direction["calibrationLR"] == "r"){
-    for(int i=1; i < degrees; i++){
-    myservo1.write(currentXMotor - i);
-    
-    delay(10);
-    }
-    currentXMotor -= degrees;
-
-  }
-
-  if (direction["calibrationUD"] == "u"){
-   for(int i=1; i < degrees; i++){
-    myservo2.write(currentYMotor - i);
-    
-    delay(10);
-    }
-    currentYMotor -= degrees;
-
-  }
-
-  else if (direction["calibrationUD"] == "d"){
-    for(int i=1; i < degrees; i++){
-    myservo2.write(currentYMotor + i);
-    
-    delay(10);
-    }
-    currentYMotor += degrees;
-        }
-
-}
 
 
 
@@ -171,57 +65,14 @@ void webSocketEvent(WStype_t type, uint8_t *payload, size_t length) {
         break;
     }
 
-      
-
-      if(doc["move"]){
-        int i = doc["move"];
-        myservo1.write(i);
-        myservo2.write(i);
-        currentXMotor = i;
-        currentYMotor = i;
-      }
-  
-
-      //starts calibration
-      if (doc["type"] == "calibration")
-      {
-        Serial.println((String)doc["type"]);
-        myservo1.write(90);
-        myservo2.write(90);
-        currentXMotor = 90;
-        currentYMotor = 90;
-        delay(1000);
-
-        if (doc["facingMode"] == "user"){
-          calibrate_selfie(doc);
-        }
-
-        else if(doc["facingMode"] == "environment"){
-          calibrate_environment(doc);
-        }
-      }
-
-
-
-      
-      
-      if (doc["type"] == "tracking")
-    {
-      Serial.print("Received Tracking Info:");
-      myservo1.write(currentXMotor + (int)doc["xMotor"]);
-      myservo2.write(currentYMotor + (int)doc["yMotor"]);
-      currentXMotor += (int)doc["xMotor"];
-      currentYMotor += (int)doc["yMotor"];
-      delay(2000);
-      
-     
-      messAv = true;
+    if (doc["xMotor"] && doc["yMotor"]){
+      myservo1.write((int)doc["xMotor"]);
+      myservo2.write((int)doc["xMotor"]);
     }
+
+
       // send message to server
       break;
-       
-    
-      
   }
 }
 }
@@ -263,8 +114,6 @@ void setup() {
   webSocket.setReconnectInterval(5000);
   myservo1.write(90);
   myservo2.write(90);
-  currentXMotor = 90;
-  currentYMotor = 90;
 }
 
 

@@ -11,8 +11,6 @@ calibrateR = False
 #variable for conversion factor of px/degrees
 pxByDegrees = 0
 
-#sees if motor angle is ready to be sent off, for tracking
-dataReady = False
 
 #see if motor is ready to be sent off for calibration
 calibrationMotorsReady = 0
