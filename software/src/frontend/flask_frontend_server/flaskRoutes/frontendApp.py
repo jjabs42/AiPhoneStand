@@ -2,8 +2,8 @@ import json
 from . import shared
 from ....backend.tracker import motor_angle
 from ..utils import calibrate
-from ..utils import sendTo
-
+from ..utils import sendTo, sendAmount
+from ..utils import toImage
 
 
 #number of degrees to move the motors for calibration
@@ -22,7 +22,7 @@ def registerSocket(sock):
             try:
                 jsonData = json.loads(data)
             except Exception as e:
-                print(e)
+                print(f"Json failed{e}")
 
             
             if jsonData.get("CalibrationInitiated") == True:
@@ -33,20 +33,25 @@ def registerSocket(sock):
             
             #saying that if the thing we want to do is calibrate, then we calibrate
             elif jsonData.get("action") == "CalibrationActive":
-                pxByDegrees = calibrate(sock, calibrationDegrees)
-                shared.pxByDegrees = pxByDegrees
+                calibrate(sock, calibrationDegrees)
+                
                 
 
 
             #tracking
             else:
                 if shared.pxByDegrees == 0:
-                    raise ValueError("Please Calibrate")
+                    print("Please Calibrate")
+                    sock.send("CalibrationFailed")
+                    
 
-
-                try:
-                    #takes a frame and detects difference between face and center. Uses motor conversion to find the motor angle required
-                    motorData = motor_angle(data, shared.pxByDegrees)
-                except AttributeError:
-                    print("Not Calibrated")
-                
+                else:
+                    try:
+                        data = toImage(jsonData)
+                        #takes a frame and detects difference between face and center. Uses motor conversion to find the motor angle required
+                        motorData = motor_angle(data, shared.pxByDegrees)
+                        print(motorData)
+                        sendAmount(motorData)
+                    except AttributeError:
+                        print("Not Calibrated")
+                    

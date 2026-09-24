@@ -1,6 +1,6 @@
 // --- WEBSOCKET & TIMING PARAMETERS// Made with LLMs
 const WEBSOCKET_URL = `wss://${window.location.hostname}:5555/stream`;
-const SEND_INTERVAL_MS = 2000; 
+const SEND_INTERVAL_MS = 4000; 
 const CALIBRATION_DELAY_MS = 3000; // Time in ms to wait before sending Frame 2
 
 const webcamVideo = document.getElementById("webcamVideo");

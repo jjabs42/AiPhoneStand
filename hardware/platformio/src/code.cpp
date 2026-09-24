@@ -67,7 +67,7 @@ void webSocketEvent(WStype_t type, uint8_t *payload, size_t length) {
 
     if (doc["xMotor"] && doc["yMotor"]){
       myservo1.write((int)doc["xMotor"]);
-      myservo2.write((int)doc["xMotor"]);
+      myservo2.write((int)doc["yMotor"]);
     }
 
 

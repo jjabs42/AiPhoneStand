@@ -1,5 +1,6 @@
 from ..utils import connect
 from flask_sock import Sock
+import time
 #route for arduino ws
 
 def registerArduino(sock):
@@ -12,6 +13,8 @@ def registerArduino(sock):
         while True:
             message = ws.receive()
             print(message)
+            time.sleep(0.01)
+
 
         
 

@@ -13,6 +13,7 @@ def connect(connection):
 #parameter is a tuple of x(bottom motor), and y(top motor) commands
 def sendAmount(motorData: list):
     if ws:
+        shared.previousMotorAngles = shared.currentMotorAngles
         ws.send(json.dumps({
             "xMotor" : shared.currentMotorAngles[0] + motorData[0],
             "yMotor" : shared.currentMotorAngles[1] + motorData[1]
@@ -23,6 +24,7 @@ def sendAmount(motorData: list):
 
 def sendTo(motorData: list):
     if ws:
+        shared.previousMotorAngles = shared.currentMotorAngles
         ws.send(json.dumps({
             "xMotor" : motorData[0], 
             "yMotor" : motorData[1]

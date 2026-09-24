@@ -1,6 +1,13 @@
 #all shared variables between routes
 
+
+
+#constant motor degrees/second(rounded from specs)
+dgPerSec = 355
+
 currentMotorAngles = [90, 90]
+
+previousMotorAngles = [90, 90]
 
 #check if calibration button was clicked
 clickedCal = False

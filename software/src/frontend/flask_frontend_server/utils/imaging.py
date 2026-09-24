@@ -3,6 +3,7 @@ import base64
 
 def toImage(frame):
     try:
+        #extracts image from the dict
         frame = frame.get("image")
         #strips
         if "," in frame:
