@@ -16,8 +16,8 @@ def registerArduino(sock):
             print(message)
             time.sleep(0.01)
             message: str
-            x = message.strip().split(",")
-            print(x)
+            x, y = message.strip().split(",")
+            
             x = int(x)
             y = int(y)
 

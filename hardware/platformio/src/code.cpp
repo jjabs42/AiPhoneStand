@@ -37,12 +37,15 @@ int currentMotorY = 0;
 
 void sendMotorX(int x)
 {
+x = std::clamp(x, 0, 180);
 myservo1.write(x);
 currentMotorX = x;
 }
 
 void sendMotorY(int y)
 {
+//limit the motor movements here because this is the only place its moving
+y = std::clamp(y, 0, 180);
 myservo2.write(y);
 currentMotorY = y;
 }

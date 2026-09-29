@@ -14,10 +14,14 @@ def connect(connection):
 def sendAmount(motorData: list):
     if ws:
         shared.previousMotorAngles = shared.currentMotorAngles
-        ws.send(json.dumps({
-            "xMotor" : shared.currentMotorAngles[0] + motorData[0],
-            "yMotor" : shared.currentMotorAngles[1] + motorData[1]
-            }))
+
+        try:
+            ws.send(json.dumps({
+                "xMotor" : shared.currentMotorAngles[0] + motorData[0],
+                "yMotor" : shared.currentMotorAngles[1] + motorData[1]
+                }))
+        except TypeError:
+            print("No Face")
 
         shared.currentMotorAngles[0] = shared.currentMotorAngles[0] + motorData[0]
         shared.currentMotorAngles[1] = shared.currentMotorAngles[1] + motorData[1]
@@ -25,10 +29,13 @@ def sendAmount(motorData: list):
 def sendTo(motorData: list):
     if ws:
         shared.previousMotorAngles = shared.currentMotorAngles
-        ws.send(json.dumps({
+        try:
+            ws.send(json.dumps({
             "xMotor" : motorData[0], 
             "yMotor" : motorData[1]
             }))
+        except TypeError:
+            print("no face")
         shared.currentMotorAngles[0] = motorData[0]
         shared.currentMotorAngles[1] = motorData[1]
         
