@@ -26,11 +26,26 @@ const int pin5 = 5;
 Servo myservo1;
 Servo myservo2;
 
+//we need to store the current command on here
+int currentMotorX = 0;
+int currentMotorY = 0;
+
+
 //___________________________________________________________________________________________________________//
 
 
 
+void sendMotorX(int x)
+{
+myservo1.write(x);
+currentMotorX = x;
+}
 
+void sendMotorY(int y)
+{
+myservo2.write(y);
+currentMotorY = y;
+}
 
 
 
@@ -39,9 +54,11 @@ Servo myservo2;
 
 
 //basically a function that each determines the state of the socket
-void webSocketEvent(WStype_t type, uint8_t *payload, size_t length) {
+void webSocketEvent(WStype_t type, uint8_t *payload, size_t length) 
+{
 
-  switch (type) {
+  switch (type) 
+ {
     case WStype_DISCONNECTED:
       Serial.println("[WSc] Disconnected!");
       break;
@@ -50,12 +67,13 @@ void webSocketEvent(WStype_t type, uint8_t *payload, size_t length) {
       
 
       // send message to server when Connected
-      webSocket.sendTXT("Connected");
+      
       break;
     
     
     //if text is received  
     case WStype_TEXT:{
+    Serial.println("Received");
     
     //json conversion
     JsonDocument doc;
@@ -65,16 +83,69 @@ void webSocketEvent(WStype_t type, uint8_t *payload, size_t length) {
         break;
     }
 
-    if (doc["xMotor"] && doc["yMotor"]){
-      myservo1.write((int)doc["xMotor"]);
-      myservo2.write((int)doc["yMotor"]);
-    }
+    if (doc.containsKey("xMotor") && doc.containsKey("yMotor"))
+    {
+
+      // new commands: where do you wanna move to?
+      int xNew = doc["xMotor"];
+      int yNew = doc["yMotor"];
 
 
-      // send message to server
+      // previous angle
+      int xPrev = currentMotorX;
+      int yPrev = currentMotorY;
+
+
+    // sets direction of movement
+     int xDirection = 0;
+
+      if (xNew != xPrev) {
+          xDirection = abs(xNew - xPrev) / (xNew - xPrev);
+      }
+
+      int yDirection = 0;
+
+      if (yNew != yPrev) {
+          yDirection = abs(yNew - yPrev) / (yNew - yPrev);
+      }
+      
+      
+
+
+
+      //finds the max distance either x motor or y motor will have to move
+      int maximum = max(abs(xNew-xPrev), abs(yNew-yPrev));
+
+      //moves until completion
+      for (int i = 0; i<=maximum; i+=2){
+
+       
+
+        // moves until passes target. Send motor updates the current angle
+        if(abs(xNew-xPrev)>=i){
+          sendMotorX(xPrev+(i)*xDirection);
+        }
+
+        // moves until passes target
+        if(abs(yNew-yPrev)>=i){
+          sendMotorY(yPrev+(i)*yDirection);
+        }
+      
+
+        //sends position every ten degrees, we will then predict every time its not sent
+        if(i%10 == 0){
+        webSocket.sendTXT((String)currentMotorX + "," + (String)currentMotorY);
+        }
+
+      
+     }
+
+
+      
       break;
+   }
   }
-}
+ }
 }
 
 
@@ -112,8 +183,8 @@ void setup() {
 
   // try ever 5000 again if connection has failed
   webSocket.setReconnectInterval(5000);
-  myservo1.write(90);
-  myservo2.write(90);
+  sendMotorX(90);
+  sendMotorY(90);
 }
 
 

@@ -4,7 +4,7 @@ from ....backend.tracker import motor_angle
 from ..utils import calibrate
 from ..utils import sendTo, sendAmount
 from ..utils import toImage
-
+import time
 
 #number of degrees to move the motors for calibration
 calibrationDegrees = 25
@@ -45,8 +45,10 @@ def registerSocket(sock):
                     sock.send("CalibrationFailed")
                     
 
-                else:
-                    try:
+            
+                else: 
+                    
+                    try: 
                         data = toImage(jsonData)
                         #takes a frame and detects difference between face and center. Uses motor conversion to find the motor angle required
                         motorData = motor_angle(data, shared.pxByDegrees)
@@ -54,4 +56,4 @@ def registerSocket(sock):
                         sendAmount(motorData)
                     except AttributeError:
                         print("Not Calibrated")
-                    
+                
