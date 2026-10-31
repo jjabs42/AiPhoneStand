@@ -24,7 +24,7 @@ HOW TO BUILD INCLUDED IN THE FUTURE
 ```bash
  python -m software.src.frontend.flask_frontend_server.app
 ```
-    The arduino needs to be turned on so it can connect to the websocket
+- NOTE: The arduino needs to be turned on so it can connect to the websocket
 4. Visit the IP of your computer on port 5555  (IP:5555) on a web browser with the desired phone
 5. Calibrate 
 6. Start tracking
