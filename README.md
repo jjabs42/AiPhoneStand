@@ -1,9 +1,9 @@
 # A functional phone stand face tracker 
 
 # Hardware Dependencies
-Arduino R4 Wifi
-2 Mg996r [Servo motors][1]
-4 AA Battery Holder
+Arduino R4 Wifi  
+2 Mg996r [Servo motors][1]  
+4 AA Battery Holder  
 
 
 ## Quick Start
