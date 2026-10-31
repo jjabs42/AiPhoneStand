@@ -27,8 +27,8 @@ Servo myservo1;
 Servo myservo2;
 
 //we need to store the current command on here
-int currentMotorX = 0;
-int currentMotorY = 0;
+int currentMotorX = 90;
+int currentMotorY = 90;
 
 
 //___________________________________________________________________________________________________________//
@@ -38,6 +38,8 @@ int currentMotorY = 0;
 void sendMotorX(int x)
 {
 x = std::clamp(x, 0, 180);
+Serial.print("SEND: ");
+Serial.println(x);
 myservo1.write(x);
 currentMotorX = x;
 }
@@ -46,6 +48,8 @@ void sendMotorY(int y)
 {
 //limit the motor movements here because this is the only place its moving
 y = std::clamp(y, 0, 180);
+Serial.print("SEND: ");
+Serial.println(y);
 myservo2.write(y);
 currentMotorY = y;
 }
@@ -92,7 +96,7 @@ void webSocketEvent(WStype_t type, uint8_t *payload, size_t length)
       // new commands: where do you wanna move to?
       int xNew = doc["xMotor"];
       int yNew = doc["yMotor"];
-
+      
 
       // previous angle
       int xPrev = currentMotorX;
@@ -133,10 +137,12 @@ void webSocketEvent(WStype_t type, uint8_t *payload, size_t length)
         if(abs(yNew-yPrev)>=i){
           sendMotorY(yPrev+(i)*yDirection);
         }
+
+        delay(10);
       
 
         //sends position every ten degrees, we will then predict every time its not sent
-        if(i%10 == 0){
+        if((i%10 == 0 && i>0) || i>=maximum){
         webSocket.sendTXT((String)currentMotorX + "," + (String)currentMotorY);
         }
 
@@ -178,7 +184,7 @@ void setup() {
   Serial.println("\n NetworkIP is ");
   Serial.println(WiFi.localIP());
 
-  webSocket.begin("192.168.68.62", 5556, "/stream");
+  webSocket.begin("ADD CURRENT HOST IP(COMPUTER ITS RUNNING ON", 5556, "/stream");
   
 
   webSocket.onEvent(webSocketEvent);
@@ -186,8 +192,9 @@ void setup() {
 
   // try ever 5000 again if connection has failed
   webSocket.setReconnectInterval(5000);
-  sendMotorX(90);
-  sendMotorY(90);
+  myservo1.write(90);
+  myservo2.write(90);
+  
 }
 
 

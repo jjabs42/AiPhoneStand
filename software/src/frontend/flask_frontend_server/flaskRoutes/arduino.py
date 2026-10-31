@@ -1,6 +1,7 @@
 from ..utils import connect
 from flask_sock import Sock
 import time
+from . import shared
 
 #route for arduino ws basically connects the socket
 
@@ -18,11 +19,8 @@ def registerArduino(sock):
             message: str
             x, y = message.strip().split(",")
             
-            x = int(x)
-            y = int(y)
-
-            print(x,y)
-
+            shared.currentMotorAngles[0] = x
+            shared.currentMotorAngles[1] = y
 
         
 

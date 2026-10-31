@@ -50,9 +50,11 @@ def calibrate(sock, calibrationDegrees):
     #determines direction of calibration
     directions = motorMove(mdptsInit, center, facingMode=facingMode, degreesMoved=calibrationDegrees)
     directions = list(directions)
+    print(f"Directions: {directions}" )
     time.sleep(1)
     #sends motor commands
     sendAmount(directions)
+    print(directions)
 
 
 
